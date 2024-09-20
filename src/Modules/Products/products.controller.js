@@ -70,6 +70,7 @@ export const addProduct = async (req, res, next) => {
     data: newProduct,
   });
 };
+// add comment
 
 /**
  * @api {put} /products/update/:productId  Update Product
