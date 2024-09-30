@@ -31,4 +31,6 @@ categoryRouter.put(
 );
 
 categoryRouter.delete("/delete/:_id", errorHandler(controller.deleteCategory));
+
+categoryRouter.get("/list", errorHandler(controller.listCategories));
 export { categoryRouter };

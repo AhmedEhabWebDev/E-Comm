@@ -143,32 +143,32 @@ export const updateProduct = async (req, res, next) => {
 
 /**
  * @api {get} /products/list  list all Products
- *
  */
 export const listProducts = async (req, res, next) => {
   // find all products
-  const { page = 1, limit = 5 } = req.query;
+  const { page = 1, limit = 5, ...filters } = req.query;
   const skip = (page - 1) * limit;
-  /**
-   * @way 1 using find , limit , skip methods
-   */
-  const data = await Product.find()
-    .limit(limit)
-    .skip(skip)
-    .select("-Images --spescs -categoryId -subCategoryId -brandId");
 
-  /**
-   * @way 2 using paginate method from mongoose-paginate-v2 as schema plugin
-   */
-  const products = await Product.paginate(
-    {
-      appliedPrice: { $gte: 20000 },
-    },
+  const filtersAsString = JSON.stringify(filters);
+  const replasedFilters = filtersAsString.replaceAll(
+    /gte|gt|lte|lt|eq|ne|regex/g,
+    (match) => `$${match}`
+  );
+  const parsedFilters = JSON.parse(replasedFilters);
+
+  console.log(
+    filters,
+    filtersAsString,
+    replasedFilters,
+    parsedFilters
+  );
+  
+  const products = await Product.paginate(parsedFilters,
     {
       page,
       limit,
       skip,
-      select: "-Images --spescs -categoryId -subCategoryId -brandId",
+      select: "-Images -spescs -categoryId -subCategoryId -brandId",
       sort: { appliedPrice: 1 },
     }
   );

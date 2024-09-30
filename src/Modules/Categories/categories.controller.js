@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 // utils
 import { ErrorClass } from "../../Utils/error-class.utils.js";
 import { cloudinaryConfig, uploadFile } from "../../Utils/index.js";
+import { ApiFeatures } from "../../Utils/index.js";
 // models
 import { Brand, Category, SubCategory } from "../../../DB/Models/index.js";
 
@@ -172,3 +173,20 @@ export const deleteCategory = async (req, res, next) => {
     message: "Category deleted successfully",
   });
 };
+
+
+export const listCategories = async (req, res, next) => {
+
+  const mongooseQuery = Category.find();
+  const apiFeaturesInstance = new ApiFeatures(req.query, mongooseQuery)
+  .paginate()
+  .filter()
+
+  const list = await apiFeaturesInstance.mongooseQuery;
+  
+  res.json({
+    status: "success",
+    message: "Categories found",
+    data: list
+  })
+}
