@@ -1,3 +1,4 @@
+import { calculateCartTotal } from "../../src/Modules/Cart/Utils/cart.utils.js";
 import mongoose from "../global-setup.js";
 
 const { Schema, model } = mongoose;
@@ -30,5 +31,10 @@ const cartSchema = new Schema({
   subTotal: Number
 
 }, { timestamps: true });
+
+cartSchema.pre("save", function (next) {
+  this.subTotal = calculateCartTotal(this.products)
+  next();
+});
 
 export const Cart = mongoose.models.Cart || model("Cart", cartSchema)

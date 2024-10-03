@@ -1,6 +1,7 @@
 // models
 import { Product, Cart } from "../../../DB/Models/index.js";
 import { ErrorClass } from "../../Utils/index.js";
+import { checkProductStock } from "./Utils/cart.utils.js";
 
 /**
  * @api {POST} /carts/add    Add to cart
@@ -11,10 +12,7 @@ export const addToCart = async (req, res, next) => {
   const { quantity } = req.body;
   const { productId } = req.params;
 
-  const product = await Product.findOne({
-    _id: productId,
-    stock: { $gte: quantity },
-  });
+  const product = await checkProductStock(productId, quantity);
 
   if (!product) {
     return next(
@@ -25,7 +23,7 @@ export const addToCart = async (req, res, next) => {
   const cart = await Cart.findOne({ userId });
 
   if (!cart) {
-    const subTotal = product.appliedPrice * quantity;
+    // const subTotal = product.appliedPrice * quantity;
     const newCart = new Cart({
       userId,
       products: [
@@ -60,7 +58,7 @@ export const addToCart = async (req, res, next) => {
     quantity,
     price: product.appliedPrice,
   });
-  cart.subTotal += product.appliedPrice * quantity;
+  // cart.subTotal += product.appliedPrice * quantity;
 
   await cart.save();
   return res
@@ -90,11 +88,11 @@ export const removeFromCart = async (req, res, next) => {
     return res.status(200).json({message: 'Product Removed From Cart'})
   }
 
-  cart.subTotal = 0
+  // cart.subTotal = 0
 
-  cart.products.forEach(p => {
-    cart.subTotal += p.price * p.quantity
-  })
+  // cart.products.forEach(p => {
+  //   cart.subTotal += p.price * p.quantity
+  // })
 
   await cart.save()
 
@@ -118,7 +116,7 @@ export const updateCart = async (req, res, next) => {
     );
   }
 
-  const product = await Product.findOne({ _id: productId, stock: { $gte: quantity } });
+  const product = await checkProductStock(productId, quantity);
   if (!product) {
     return next(
       new ErrorClass("Product Not available", 404, "Product Not available")
@@ -128,11 +126,11 @@ export const updateCart = async (req, res, next) => {
   const productIndex = cart.products.findIndex(p => p.productId.toString() == product._id.toString());
   cart.products[productIndex].quantity = quantity;
 
-  cart.subTotal = 0
+  // cart.subTotal = 0
 
-  cart.products.forEach(p => {
-    cart.subTotal += p.price * p.quantity
-  })
+  // cart.products.forEach(p => {
+  //   cart.subTotal += p.price * p.quantity
+  // })
 
   await cart.save()
 
