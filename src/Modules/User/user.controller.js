@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { compareSync, hashSync } from "bcrypt";
-import { User } from "../../../DB/Models/index.js";
+import { Address, User } from "../../../DB/Models/index.js";
 import { ErrorClass } from "../../Utils/index.js";
 
 
@@ -9,7 +9,7 @@ import { ErrorClass } from "../../Utils/index.js";
  */
 
 export const registerUser = async (req, res, next) => {
-  const { username, email, password, gender, age, phone, userType } = req.body;
+  const { username, email, password, gender, age, phone, userType, country, city, postalCode, buildingNumber, floorNumber, addressLabel, isDefault, isMarkedAsDeleted } = req.body;
 
   // check email
   const isEmailExist = await User.findOne({ email });
@@ -18,8 +18,8 @@ export const registerUser = async (req, res, next) => {
     return next( new ErrorClass("Email already exist", 400,"Email already exist"));
   }
 
-  // create User Object
-  const userObject = {
+  // create User Instance
+  const userInstance = new User({
     username,
     email,
     password,
@@ -27,16 +27,32 @@ export const registerUser = async (req, res, next) => {
     age,
     phone,
     userType
-  }
+  })
+
+  // create Address Instance
+  const addressInstance = new Address({
+    userId: userInstance._id,
+    country,
+    city,
+    postalCode,
+    buildingNumber,
+    floorNumber,
+    addressLabel,
+    isDefault: true
+  })
 
   // creat user in db
-  const newUser = await User.create(userObject);
-  // const newUser = await userObject.save();
+  const newUser = await userInstance.save();
+
+  // create address in db
+  const sevedAddress = await addressInstance.save();
+
 
   res.status(201).json({
     status: "success",
     message: "User created successfully",
-    data: newUser,
+    user: newUser,
+    address: sevedAddress
   });
 };
 
