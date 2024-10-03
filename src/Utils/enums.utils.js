@@ -8,3 +8,8 @@ export const DiscountType = {
   PERCENTAGE: "Percentage",
   FIXED: "Fixed",
 };
+
+export const couponType = {
+  PERCENTAGE: "Percentage",
+  AMOUNT: "Amount",
+};
