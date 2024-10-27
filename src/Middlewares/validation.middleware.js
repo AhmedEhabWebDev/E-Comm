@@ -6,7 +6,7 @@
  * @description - Middleware function to validate the request data against the schema
 */
 
-const reqKeys = ["body", "query", "params", "headers"];
+const reqKeys = ["body", "query", "params", "headers", "authUser"];
 
 export const validationMiddleware = (schema) => {
   return (req, res, next) => {

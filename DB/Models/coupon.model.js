@@ -59,3 +59,25 @@ const couponSchema = new Schema({
 
 
 export const Coupon = mongoose.models.Coupon || model("Coupon", couponSchema)
+
+// creat coupon changes log model
+// couponId, userId, changes: {}
+
+const couponChangesLogSchema = new Schema({
+  couponId: {
+    type: Schema.Types.ObjectId,
+    ref: "Coupon",
+    required: true
+  },
+  updatedBy: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
+  changes: {
+    type: Object,
+    required: true
+  }
+}, { timestamps: true });
+
+export const CouponChangesLog = mongoose.models.CouponChangesLog || model("CouponChangesLog", couponChangesLogSchema);

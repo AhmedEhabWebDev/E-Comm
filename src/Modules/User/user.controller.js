@@ -111,7 +111,7 @@ export const signIn = async (req, res) => {
     return  next(new ErrorClass("invalid email or password", 404, "invalid email or password"));
 
   // generate the access token
-  const token = jwt.sign({ userId: user._id }, process.env.LOGIN_SECRET);
+  const token = jwt.sign({ userId: user._id, email, userName: user.username }, process.env.LOGIN_SECRET);
 
   // response
   res.status(200).json({

@@ -5,7 +5,9 @@ import { Product } from "../../../DB/Models/index.js";
 // utils
 import {
   calculateProductPrice,
+  cloudinaryConfig,
   ErrorClass,
+  ReviewStatus,
   uploadFile,
 } from "../../Utils/index.js";
 
@@ -74,7 +76,6 @@ export const addProduct = async (req, res, next) => {
 
 /**
  * @api {put} /products/update/:productId  Update Product
- * @todo Upload images to cloudinary and db
  */
 export const updateProduct = async (req, res, next) => {
   // productId from params
@@ -122,9 +123,7 @@ export const updateProduct = async (req, res, next) => {
   }
 
   // update the product specs
-  /**
-   * @todo when updating the Images field , you need to apply JSON.parse() method for specs before updating it in db
-   */
+
   if (specs) product.specs = specs;
 
   // save the product changes
@@ -138,8 +137,34 @@ export const updateProduct = async (req, res, next) => {
 };
 
 /**
- * @todo @api {delete} /products/delete/:productId  Delete Product
+ * @api {delete} /products/delete/:productId  Delete Product
  */
+
+export const deleteProduct = async (req, res, next) => {
+  // get the product id
+  const { productId } = req.params;
+
+  // find the product by id
+  const product = await Product.findByIdAndDelete(productId)
+    .populate("categoryId")
+    .populate("subCategoryId")
+    .populate("brandId");
+  if (!product) {
+    return next(new ErrorClass("product not found", 404, "product not found"));
+  }
+  // delete the related image from cloudinary
+  const productPath = `${process.env.UPLOADS_FOLDER}/Categories/${product.categoryId.customId}/SubCategories/${product.subCategoryId.customId}/Brands/${product.brandId.customId}/Products/${product.Images.customId}`;
+  // delete the related products from db
+  await Product.deleteMany({ productId: product._id });
+  // delete the related folders from cloudinary
+  await cloudinaryConfig().api.delete_resources_by_prefix(productPath);
+  await cloudinaryConfig().api.delete_folder(productPath);
+
+  res.status(200).json({
+    status: "success",
+    message: "product deleted successfully",
+  });
+};
 
 /**
  * @api {get} /products/list  list all Products
@@ -165,6 +190,10 @@ export const listProducts = async (req, res, next) => {
   
   const products = await Product.paginate(parsedFilters,
     {
+      populate: {
+        path: "Reviews",
+        match: { reviewStatus: ReviewStatus.ACCEPTED },
+      },
       page,
       limit,
       skip,

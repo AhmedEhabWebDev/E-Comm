@@ -20,5 +20,7 @@ productRouter.post(
 
 productRouter.put("/update/:productId", errorHandler(controller.updateProduct));
 
+productRouter.delete("/delete/:productId", errorHandler(controller.deleteProduct));
+
 productRouter.get("/list", errorHandler(controller.listProducts));
 export { productRouter };
